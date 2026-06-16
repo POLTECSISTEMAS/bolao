@@ -38,7 +38,6 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection, updateDoc, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -89,7 +88,7 @@
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen">
 <div id="root"></div>
-<script type="text/babel">
+<script type="module">
 
 const ADMIN_EMAIL = "isacpandalov@gmail.com";
 const ORG_NAME = "Pol Entertainment";
