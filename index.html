@@ -1,1 +1,996 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="Bolão Copa 2026"/>
+  <meta name="theme-color" content="#0f172a"/>
+  <title>Bolão Copa 2026</title>
+  <script>
+    // PWA Manifest injetado via Blob (compatível com iOS Safari)
+    const iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect width="192" height="192" rx="40" fill="#0f172a"/><circle cx="96" cy="96" r="62" fill="none" stroke="#10b981" stroke-width="8"/><path d="M96 44 L112 80 L152 80 L120 104 L132 140 L96 118 L60 140 L72 104 L40 80 L80 80 Z" fill="#10b981" opacity="0.15"/><path d="M76 72 C76 72 86 68 96 72 C106 76 116 72 116 72 L120 92 C120 92 110 96 96 96 C82 96 72 92 72 92 Z" fill="#10b981"/><path d="M72 92 L76 112 C76 112 84 120 96 120 C108 120 116 112 116 112 L120 92" fill="none" stroke="#10b981" stroke-width="4"/><circle cx="88" cy="82" r="3" fill="#0f172a"/><circle cx="104" cy="82" r="3" fill="#0f172a"/></svg>`;
+    const iconUrl = URL.createObjectURL(new Blob([iconSvg], {type:'image/svg+xml'}));
+    const manifest = {
+      name: "Bolão Copa 2026",
+      short_name: "Bolão",
+      description: "Bolão de palpites da Copa do Mundo 2026",
+      start_url: "./",
+      display: "standalone",
+      orientation: "portrait",
+      background_color: "#0f172a",
+      theme_color: "#0f172a",
+      icons: [
+        { src: iconUrl, sizes: "192x192", type: "image/svg+xml", purpose: "any maskable" },
+        { src: iconUrl, sizes: "512x512", type: "image/svg+xml", purpose: "any maskable" }
+      ]
+    };
+    const blob = new Blob([JSON.stringify(manifest)], {type:'application/manifest+json'});
+    const manifestUrl = URL.createObjectURL(blob);
+    const link = document.createElement('link');
+    link.rel = 'manifest'; link.href = manifestUrl;
+    document.head.appendChild(link);
+  </script>
+  <!-- Apple touch icon inline via link para iOS -->
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='40' fill='%230f172a'/><circle cx='96' cy='96' r='62' fill='none' stroke='%2310b981' stroke-width='8'/><path d='M76 72 C76 72 86 68 96 72 C106 76 116 72 116 72 L120 92 C120 92 110 96 96 96 C82 96 72 92 72 92 Z' fill='%2310b981'/></svg>"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection, updateDoc, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    const firebaseConfig = {
+      apiKey: "AIzaSyBAflArem5OVomnUqx0qDGw1Xg9VYFTWzs",
+      authDomain: "polcopa2026.firebaseapp.com",
+      projectId: "polcopa2026",
+      storageBucket: "polcopa2026.firebasestorage.app",
+      messagingSenderId: "393151831156",
+      appId: "1:393151831156:web:6e9f2c3683194d26de4521"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    window.__db = db;
+    window.__firebase = { doc, setDoc, getDoc, onSnapshot, collection, updateDoc, getDocs, deleteDoc };
+    window.__firebaseReady = true;
+    window.dispatchEvent(new Event('firebaseReady'));
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <style>
+    *{-webkit-tap-highlight-color:transparent;box-sizing:border-box;}
+    body{font-family:'Inter',sans-serif;overscroll-behavior:none;background:#0a0f1e;}
+    .scrollbar-none::-webkit-scrollbar{display:none;}
+    .scrollbar-none{-ms-overflow-style:none;scrollbar-width:none;}
+    .fade-in{animation:fadeIn 0.25s ease;}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+    .slide-up{animation:slideUp 0.3s ease;}
+    @keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+    input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;}
+    input[type=number]{-moz-appearance:textfield;}
+    /* Gradiente de fundo sutil */
+    body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(16,185,129,0.08) 0%,transparent 60%);pointer-events:none;z-index:0;}
+    #root{position:relative;z-index:1;}
+    /* Card hover sutil */
+    .card-hover{transition:transform 0.15s ease,box-shadow 0.15s ease;}
+    .card-hover:active{transform:scale(0.985);}
+    /* Glow no botão primário */
+    .btn-primary{box-shadow:0 0 20px rgba(16,185,129,0.25);}
+    .btn-primary:hover{box-shadow:0 0 28px rgba(16,185,129,0.4);}
+    /* Borda superior colorida no 1º lugar do ranking */
+    .rank-first{border-top:2px solid rgba(234,179,8,0.6);}
+    /* Safe area para notch/home indicator */
+    .safe-area-pb{padding-bottom:env(safe-area-inset-bottom);}
+    /* Pulse sutil no badge de pendente */
+    @keyframes pulse-amber{0%,100%{opacity:1}50%{opacity:0.6}}
+    .pulse-amber{animation:pulse-amber 2s ease-in-out infinite;}
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen">
+<div id="root"></div>
+<script type="text/babel">
 
+const ADMIN_EMAIL = "isacpandalov@gmail.com";
+const ORG_NAME = "Pol Entertainment";
+const INITIAL_GAMES = [
+{id:"JOGO_01",grupo:"Grupo A",timeA:"México",timeB:"África do Sul",data:"11/06/2026",horario:"16:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_02",grupo:"Grupo A",timeA:"Coreia do Sul",timeB:"República Tcheca",data:"11/06/2026",horario:"23:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_03",grupo:"Grupo B",timeA:"Canadá",timeB:"Bósnia e Herzegovina",data:"12/06/2026",horario:"16:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_04",grupo:"Grupo D",timeA:"Estados Unidos",timeB:"Paraguai",data:"12/06/2026",horario:"22:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_05",grupo:"Grupo B",timeA:"Catar",timeB:"Suíça",data:"13/06/2026",horario:"16:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_06",grupo:"Grupo C",timeA:"Brasil",timeB:"Marrocos",data:"13/06/2026",horario:"19:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_07",grupo:"Grupo C",timeA:"Haiti",timeB:"Escócia",data:"13/06/2026",horario:"22:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_08",grupo:"Grupo D",timeA:"Austrália",timeB:"Turquia",data:"14/06/2026",horario:"01:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_09",grupo:"Grupo E",timeA:"Alemanha",timeB:"Curaçau",data:"14/06/2026",horario:"14:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_10",grupo:"Grupo F",timeA:"Holanda",timeB:"Japão",data:"14/06/2026",horario:"17:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_11",grupo:"Grupo E",timeA:"Costa do Marfim",timeB:"Equador",data:"14/06/2026",horario:"20:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_12",grupo:"Grupo F",timeA:"Suécia",timeB:"Tunísia",data:"14/06/2026",horario:"23:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_13",grupo:"Grupo H",timeA:"Espanha",timeB:"Cabo Verde",data:"15/06/2026",horario:"13:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_14",grupo:"Grupo G",timeA:"Bélgica",timeB:"Egito",data:"15/06/2026",horario:"16:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_15",grupo:"Grupo H",timeA:"Arábia Saudita",timeB:"Uruguai",data:"15/06/2026",horario:"19:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_16",grupo:"Grupo G",timeA:"Irã",timeB:"Nova Zelândia",data:"15/06/2026",horario:"22:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_17",grupo:"Grupo I",timeA:"França",timeB:"Senegal",data:"16/06/2026",horario:"16:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_18",grupo:"Grupo I",timeA:"Iraque",timeB:"Noruega",data:"16/06/2026",horario:"19:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_19",grupo:"Grupo J",timeA:"Argentina",timeB:"Argélia",data:"16/06/2026",horario:"22:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_20",grupo:"Grupo J",timeA:"Áustria",timeB:"Jordânia",data:"17/06/2026",horario:"01:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_21",grupo:"Grupo K",timeA:"Portugal",timeB:"República Democrática do Congo",data:"17/06/2026",horario:"14:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_22",grupo:"Grupo L",timeA:"Inglaterra",timeB:"Croácia",data:"17/06/2026",horario:"17:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_23",grupo:"Grupo L",timeA:"Gana",timeB:"Panamá",data:"17/06/2026",horario:"20:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_24",grupo:"Grupo K",timeA:"Uzbequistão",timeB:"Colômbia",data:"17/06/2026",horario:"21:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_25",grupo:"Grupo A",timeA:"República Tcheca",timeB:"África do Sul",data:"18/06/2026",horario:"13:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_26",grupo:"Grupo B",timeA:"Suíça",timeB:"Bósnia e Herzegovina",data:"18/06/2026",horario:"16:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_27",grupo:"Grupo B",timeA:"Canadá",timeB:"Catar",data:"18/06/2026",horario:"19:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_28",grupo:"Grupo A",timeA:"México",timeB:"Coreia do Sul",data:"18/06/2026",horario:"22:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_29",grupo:"Grupo D",timeA:"Turquia",timeB:"Paraguai",data:"19/06/2026",horario:"00:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_30",grupo:"Grupo D",timeA:"Estados Unidos",timeB:"Austrália",data:"19/06/2026",horario:"16:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_31",grupo:"Grupo C",timeA:"Escócia",timeB:"Marrocos",data:"19/06/2026",horario:"19:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_32",grupo:"Grupo C",timeA:"Brasil",timeB:"Haiti",data:"19/06/2026",horario:"21:30",placarRealA:null,placarRealB:null},
+{id:"JOGO_33",grupo:"Grupo F",timeA:"Holanda",timeB:"Suécia",data:"20/06/2026",horario:"14:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_34",grupo:"Grupo E",timeA:"Alemanha",timeB:"Costa do Marfim",data:"20/06/2026",horario:"17:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_35",grupo:"Grupo E",timeA:"Equador",timeB:"Curaçau",data:"20/06/2026",horario:"21:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_36",grupo:"Grupo F",timeA:"Tunísia",timeB:"Japão",data:"20/06/2026",horario:"23:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_37",grupo:"Grupo H",timeA:"Espanha",timeB:"Arábia Saudita",data:"21/06/2026",horario:"13:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_38",grupo:"Grupo G",timeA:"Bélgica",timeB:"Irã",data:"21/06/2026",horario:"16:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_39",grupo:"Grupo H",timeA:"Uruguai",timeB:"Cabo Verde",data:"21/06/2026",horario:"19:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_40",grupo:"Grupo G",timeA:"Nova Zelândia",timeB:"Egito",data:"21/06/2026",horario:"22:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_41",grupo:"Grupo J",timeA:"Argentina",timeB:"Áustria",data:"22/06/2026",horario:"14:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_42",grupo:"Grupo I",timeA:"França",timeB:"Iraque",data:"22/06/2026",horario:"18:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_43",grupo:"Grupo I",timeA:"Noruega",timeB:"Senegal",data:"22/06/2026",horario:"21:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_44",grupo:"Grupo J",timeA:"Jordânia",timeB:"Argélia",data:"23/06/2026",horario:"00:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_45",grupo:"Grupo K",timeA:"Portugal",timeB:"Uzbequistão",data:"23/06/2026",horario:"14:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_46",grupo:"Grupo L",timeA:"Inglaterra",timeB:"Gana",data:"23/06/2026",horario:"17:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_47",grupo:"Grupo L",timeA:"Panamá",timeB:"Croácia",data:"23/06/2026",horario:"20:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_48",grupo:"Grupo K",timeA:"Colômbia",timeB:"República Democrática do Congo",data:"23/06/2026",horario:"23:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_49",grupo:"Grupo B",timeA:"Suíça",timeB:"Canadá",data:"24/06/2026",horario:"16:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_50",grupo:"Grupo B",timeA:"Bósnia e Herzegovina",timeB:"Catar",data:"24/06/2026",horario:"16:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_51",grupo:"Grupo C",timeA:"Escócia",timeB:"Brasil",data:"24/06/2026",horario:"19:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_52",grupo:"Grupo C",timeA:"Marrocos",timeB:"Haiti",data:"24/06/2026",horario:"19:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_53",grupo:"Grupo A",timeA:"República Tcheca",timeB:"México",data:"24/06/2026",horario:"22:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_54",grupo:"Grupo A",timeA:"África do Sul",timeB:"Coreia do Sul",data:"24/06/2026",horario:"22:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_55",grupo:"Grupo E",timeA:"Equador",timeB:"Alemanha",data:"25/06/2026",horario:"17:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_56",grupo:"Grupo E",timeA:"Curaçau",timeB:"Costa do Marfim",data:"25/06/2026",horario:"17:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_57",grupo:"Grupo F",timeA:"Japão",timeB:"Suécia",data:"25/06/2026",horario:"20:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_58",grupo:"Grupo F",timeA:"Tunísia",timeB:"Holanda",data:"25/06/2026",horario:"20:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_59",grupo:"Grupo D",timeA:"Turquia",timeB:"Estados Unidos",data:"25/06/2026",horario:"23:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_60",grupo:"Grupo D",timeA:"Paraguai",timeB:"Austrália",data:"25/06/2026",horario:"23:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_61",grupo:"Grupo I",timeA:"Noruega",timeB:"França",data:"26/06/2026",horario:"16:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_62",grupo:"Grupo I",timeA:"Senegal",timeB:"Iraque",data:"26/06/2026",horario:"16:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_63",grupo:"Grupo H",timeA:"Cabo Verde",timeB:"Arábia Saudita",data:"26/06/2026",horario:"21:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_64",grupo:"Grupo H",timeA:"Uruguai",timeB:"Espanha",data:"26/06/2026",horario:"21:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_65",grupo:"Grupo G",timeA:"Egito",timeB:"Irã",data:"27/06/2026",horario:"00:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_66",grupo:"Grupo G",timeA:"Nova Zelândia",timeB:"Bélgica",data:"27/06/2026",horario:"00:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_67",grupo:"Grupo L",timeA:"Panamá",timeB:"Inglaterra",data:"27/06/2026",horario:"18:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_68",grupo:"Grupo L",timeA:"Croácia",timeB:"Gana",data:"27/06/2026",horario:"18:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_69",grupo:"Grupo K",timeA:"Colômbia",timeB:"Portugal",data:"27/06/2026",horario:"20:30",placarRealA:null,placarRealB:null},
+{id:"JOGO_70",grupo:"Grupo K",timeA:"República Democrática do Congo",timeB:"Uzbequistão",data:"27/06/2026",horario:"20:30",placarRealA:null,placarRealB:null},
+{id:"JOGO_71",grupo:"Grupo J",timeA:"Argélia",timeB:"Áustria",data:"27/06/2026",horario:"23:00",placarRealA:null,placarRealB:null},
+{id:"JOGO_72",grupo:"Grupo J",timeA:"Jordânia",timeB:"Argentina",data:"27/06/2026",horario:"23:00",placarRealA:null,placarRealB:null}
+];
+
+
+// merge: pega INITIAL_GAMES como base e sobrepõe com dados do Firestore
+function mergeGames(firestoreGames) {
+  const fsMap = {};
+  firestoreGames.forEach(g => { fsMap[g.id] = g; });
+  return INITIAL_GAMES.map(g => fsMap[g.id] ? { ...g, ...fsMap[g.id] } : g);
+}
+
+// ── ÍCONES ───────────────────────────────────────────────────────────────────
+const Ic = ({p,cls="w-5 h-5",extra=null}) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={cls}>{extra}{p}</svg>
+);
+const Trophy    =({cls})=><Ic cls={cls||"w-5 h-5"} p={<><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.45 1-1 1H4v2h16v-2h-5c-.55 0-1-.45-1-1v-2.34"/><path d="M12 2a6 6 0 0 1 6 6v5a6 6 0 0 1-12 0V8a6 6 0 0 1 6-6z"/></>}/>;
+const Calendar  =({cls})=><Ic cls={cls||"w-5 h-5"} p={<><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></>}/>;
+const QrCode    =({cls})=><Ic cls={cls||"w-5 h-5"} p={<><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v-1a2 2 0 0 0-2-2h-1"/><path d="M12 7h-2"/><path d="M12 12h2"/><path d="M12 16v2"/></>}/>;
+const SettingsIc=({cls})=><Ic cls={cls||"w-5 h-5"} p={<><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.1a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></>}/>;
+const LogInIc   =({cls})=><Ic cls={cls||"w-5 h-5"} p={<><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/></>}/>;
+const UserPlusIc=({cls})=><Ic cls={cls||"w-5 h-5"} p={<><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="16" x2="22" y1="11" y2="11"/></>}/>;
+const LogOutIc  =({cls})=><Ic cls={cls||"w-5 h-5"} p={<><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></>}/>;
+const LockIc    =({cls})=><Ic cls={cls||"w-5 h-5"} p={<><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></>}/>;
+const CoinsIc   =({cls})=><Ic cls={cls||"w-5 h-5"} p={<><circle cx="8" cy="8" r="6"/><circle cx="18" cy="18" r="4"/><path d="M12 18a6 6 0 0 0-6-6"/></>}/>;
+const MsgIc     =({cls})=><Ic cls={cls||"w-5 h-5"} p={<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>}/>;
+const ImageIc   =({cls})=><Ic cls={cls||"w-5 h-5"} p={<><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></>}/>;
+const SaveIc    =({cls})=><Ic cls={cls||"w-5 h-5"} p={<><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></>}/>;
+const AlertIc   =({cls})=><Ic cls={cls||"w-5 h-5"} p={<><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></>}/>;
+const UserCheckIc=({cls})=><Ic cls={cls||"w-5 h-5"} p={<><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></>}/>;
+const SearchIc  =({cls})=><Ic cls={cls||"w-5 h-5"} p={<><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/></>}/>;
+const ResultIc  =({cls})=><Ic cls={cls||"w-5 h-5"} p={<><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>}/>;
+const PhoneIc   =({cls})=><Ic cls={cls||"w-5 h-5"} p={<><rect width="14" height="20" x="5" y="2" rx="2"/><line x1="12" x2="12.01" y1="18" y2="18"/></>}/>;
+const ShieldIc  =({cls})=><Ic cls={cls||"w-5 h-5"} p={<><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></>}/>;
+const TrashIc   =({cls})=><Ic cls={cls||"w-5 h-5"} p={<><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></>}/>;
+
+// ── PWA INSTALL HOOK ─────────────────────────────────────────────────────────
+function usePWA() {
+  const [deferredPrompt, setDeferredPrompt] = React.useState(null);
+  const [isInstalled, setIsInstalled] = React.useState(false);
+  const [isIOS, setIsIOS] = React.useState(false);
+
+  React.useEffect(() => {
+    const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    const standalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+    setIsIOS(ios);
+    setIsInstalled(standalone);
+
+    const handler = (e) => { e.preventDefault(); setDeferredPrompt(e); };
+    window.addEventListener('beforeinstallprompt', handler);
+    window.addEventListener('appinstalled', () => setIsInstalled(true));
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const install = async () => {
+    if (!deferredPrompt) return false;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') setIsInstalled(true);
+    setDeferredPrompt(null);
+    return outcome === 'accepted';
+  };
+
+  return { canInstall: !!deferredPrompt, isInstalled, isIOS, install };
+}
+
+// ── FIREBASE HOOK ─────────────────────────────────────────────────────────────
+function useFirebase() {
+  const [ready, setReady] = React.useState(!!window.__firebaseReady);
+  React.useEffect(() => {
+    if (window.__firebaseReady) { setReady(true); return; }
+    const h = () => setReady(true);
+    window.addEventListener('firebaseReady', h);
+    return () => window.removeEventListener('firebaseReady', h);
+  }, []);
+  return ready;
+}
+
+// ── APP ───────────────────────────────────────────────────────────────────────
+function App() {
+  const fbReady = useFirebase();
+  const pwa = usePWA();
+  const [loading, setLoading] = React.useState(true);
+  const [currentUser, setCurrentUser] = React.useState(null);
+  const [users, setUsers] = React.useState([]);
+  const [games, setGames] = React.useState(INITIAL_GAMES);
+  const [guesses, setGuesses] = React.useState([]);
+  const [pixConfig, setPixConfig] = React.useState({ value:'', qrImageUrl:'', chave:'' });
+  const [activeTab, setActiveTab] = React.useState('jogos');
+  const [authMode, setAuthMode] = React.useState('login');
+  const [authForm, setAuthForm] = React.useState({ name:'', email:'', password:'', phone:'' });
+  const [authError, setAuthError] = React.useState('');
+  const [groupFilter, setGroupFilter] = React.useState('Todos');
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [tempScores, setTempScores] = React.useState({});
+  const [confirmModal, setConfirmModal] = React.useState(null);
+  const [deleteModal, setDeleteModal] = React.useState(null);
+  const [toast, setToast] = React.useState(null);
+  const [showIOSGuide, setShowIOSGuide] = React.useState(false);
+
+  const showToast = (msg, type='success') => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 3200);
+  };
+
+  const db = () => window.__db;
+  const fb = () => window.__firebase;
+
+  const isGamePast = (dateStr, timeStr) => {
+    try {
+      const [d,m,y] = dateStr.split('/').map(Number);
+      const [h,min] = timeStr.split(':').map(Number);
+      return new Date() >= new Date(y, m-1, d, h, min);
+    } catch { return false; }
+  };
+
+  const getPoints = (guess, game) => {
+    if (game.placarRealA===null||game.placarRealB===null) return null;
+    const gA=parseInt(guess.scoreA), gB=parseInt(guess.scoreB);
+    const rA=parseInt(game.placarRealA), rB=parseInt(game.placarRealB);
+    if (isNaN(gA)||isNaN(gB)||isNaN(rA)||isNaN(rB)) return null;
+    if (gA===rA && gB===rB) return 5;
+    const gW=gA>gB?'A':gA<gB?'B':'E', rW=rA>rB?'A':rA<rB?'B':'E';
+    return gW===rW ? 3 : 0;
+  };
+
+  const formatPhone = (v) => {
+    if (!v) return '';
+    const c = v.replace(/\D/g,'');
+    if (c.length > 7) return `(${c.slice(0,2)}) ${c.slice(2,7)}-${c.slice(7,11)}`;
+    if (c.length > 2) return `(${c.slice(0,2)}) ${c.slice(2)}`;
+    return c;
+  };
+
+  // ── Listeners Firebase ────────────────────────────────────────────────────
+  React.useEffect(() => {
+    if (!fbReady) return;
+    const { onSnapshot, collection, doc } = fb();
+    const unsubs = [];
+
+    unsubs.push(onSnapshot(collection(db(),'users'), snap => {
+      const list = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      setUsers(list);
+      setCurrentUser(prev => {
+        if (!prev) return prev;
+        const updated = list.find(u => u.email === prev.email);
+        return updated ? { ...prev, ...updated } : prev;
+      });
+    }));
+
+    unsubs.push(onSnapshot(collection(db(),'games'), snap => {
+      const fsGames = snap.docs.map(d => ({ ...d.data() }));
+      setGames(mergeGames(fsGames));
+      setLoading(false);
+    }));
+
+    unsubs.push(onSnapshot(collection(db(),'guesses'), snap => {
+      setGuesses(snap.docs.map(d => ({ ...d.data() })));
+    }));
+
+    unsubs.push(onSnapshot(doc(db(),'config','pix'), snap => {
+      if (snap.exists()) setPixConfig(snap.data());
+    }));
+
+    setLoading(false);
+    return () => unsubs.forEach(u => u());
+  }, [fbReady]);
+
+  // ── AUTH ──────────────────────────────────────────────────────────────────
+  const handleAuth = async (e) => {
+    e.preventDefault();
+    setAuthError('');
+    const email = authForm.email.trim().toLowerCase();
+    const password = authForm.password.trim();
+    const name = authForm.name.trim();
+    const phone = authForm.phone.trim();
+
+    if (authMode === 'login') {
+      const user = users.find(u => u.email===email && u.password===password);
+      if (user) { setCurrentUser(user); setAuthForm({name:'',email:'',password:'',phone:''}); }
+      else setAuthError('E-mail ou senha incorretos.');
+      return;
+    }
+    if (!name||!email||!password||!phone) { setAuthError('Preencha todos os campos.'); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setAuthError('E-mail inválido.'); return; }
+    if (phone.replace(/\D/g,'').length < 10) { setAuthError('Telefone inválido.'); return; }
+    if (users.some(u => u.email===email)) { setAuthError('E-mail já cadastrado.'); return; }
+    const isAdmin = email === ADMIN_EMAIL;
+    const newUser = { name, email, password, phone, isAdmin, active: isAdmin };
+    try {
+      const { setDoc, doc } = fb();
+      await setDoc(doc(db(),'users',email), newUser);
+      setCurrentUser(newUser);
+      setAuthForm({name:'',email:'',password:'',phone:''});
+    } catch { setAuthError('Erro ao criar conta. Tente novamente.'); }
+  };
+
+  // ── PALPITES ──────────────────────────────────────────────────────────────
+  const handleSaveGuess = (gameId) => {
+    if (!currentUser?.active) { showToast('Realize o pagamento para dar palpites.','error'); return; }
+    const game = games.find(g => g.id===gameId);
+    if (game && isGamePast(game.data, game.horario)) { showToast('Jogo já iniciou — palpite bloqueado.','error'); return; }
+    const sA = tempScores[`${gameId}_A`];
+    const sB = tempScores[`${gameId}_B`];
+    if (sA===undefined||sB===undefined||sA===''||sB==='') { showToast('Preencha o placar dos dois times.','error'); return; }
+    const already = guesses.find(g => g.email===currentUser.email && g.gameId===gameId);
+    if (already?.locked) { showToast('Palpite já salvo e bloqueado.','error'); return; }
+    setConfirmModal({ gameId, sA, sB, timeA: game.timeA, timeB: game.timeB });
+  };
+
+  const confirmGuess = async () => {
+    const { gameId, sA, sB } = confirmModal;
+    setConfirmModal(null);
+    const scoreA = String(Math.max(0, parseInt(sA,10)));
+    const scoreB = String(Math.max(0, parseInt(sB,10)));
+    const key = `${currentUser.email}_${gameId}`;
+    try {
+      const { setDoc, doc } = fb();
+      await setDoc(doc(db(),'guesses',key), { email: currentUser.email, gameId, scoreA, scoreB, locked: true });
+      showToast('Palpite salvo! ✅');
+    } catch { showToast('Erro ao salvar palpite.','error'); }
+  };
+
+  // ── ADMIN: ativar/bloquear ────────────────────────────────────────────────
+  const toggleUserActivation = async (email, currentActive) => {
+    try {
+      const { updateDoc, doc } = fb();
+      await updateDoc(doc(db(),'users',email), { active: !currentActive });
+      showToast(!currentActive ? 'Usuário liberado! ✅' : 'Usuário bloqueado.');
+    } catch { showToast('Erro ao atualizar usuário.','error'); }
+  };
+
+  // ── ADMIN: promover admin ─────────────────────────────────────────────────
+  const toggleAdmin = async (email, currentIsAdmin) => {
+    try {
+      const { updateDoc, doc } = fb();
+      await updateDoc(doc(db(),'users',email), { isAdmin: !currentIsAdmin });
+      showToast(!currentIsAdmin ? `${email} agora é admin.` : 'Permissão de admin removida.');
+    } catch { showToast('Erro ao atualizar permissão.','error'); }
+  };
+
+  // ── ADMIN: excluir usuário ────────────────────────────────────────────────
+  const deleteUser = async (email) => {
+    setDeleteModal(null);
+    try {
+      const { deleteDoc, doc } = fb();
+      await deleteDoc(doc(db(),'users',email));
+      showToast('Usuário excluído.');
+    } catch { showToast('Erro ao excluir usuário.','error'); }
+  };
+
+  // ── ADMIN: placar real ────────────────────────────────────────────────────
+  const handleUpdateRealScore = async (gameId, scoreA, scoreB) => {
+    const sA = scoreA==='' ? null : Math.max(0, parseInt(scoreA,10));
+    const sB = scoreB==='' ? null : Math.max(0, parseInt(scoreB,10));
+    const base = INITIAL_GAMES.find(g => g.id===gameId);
+    const current = games.find(g => g.id===gameId) || base;
+    const data = { ...base, ...current, placarRealA: isNaN(sA)?null:sA, placarRealB: isNaN(sB)?null:sB };
+    try {
+      const { setDoc, doc } = fb();
+      await setDoc(doc(db(),'games',gameId), data);
+    } catch { showToast('Erro ao salvar placar.','error'); }
+  };
+
+  // ── ADMIN: salvar pix ─────────────────────────────────────────────────────
+  const savePixConfig = async (cfg) => {
+    try {
+      const { setDoc, doc } = fb();
+      await setDoc(doc(db(),'config','pix'), cfg);
+      showToast('Configuração Pix salva! ✅');
+    } catch { showToast('Erro ao salvar Pix.','error'); }
+  };
+
+  // ── RANKING ───────────────────────────────────────────────────────────────
+  const ranking = users.filter(u => u.active).map(u => {
+    let pts=0, exact=0, winner=0, total=0;
+    guesses.filter(g => g.email===u.email).forEach(g => {
+      const game = games.find(jg => jg.id===g.gameId);
+      if (game && game.placarRealA!==null && game.placarRealB!==null) {
+        total++;
+        const p = getPoints(g, game);
+        pts += p||0;
+        if (p===5) exact++;
+        if (p===3) winner++;
+      }
+    });
+    return { name: u.name, email: u.email, phone: u.phone||'', points: pts, exact, winner, total };
+  }).sort((a,b) => b.points-a.points || b.exact-a.exact);
+
+  const grupos = ['Todos', ...new Set(INITIAL_GAMES.map(g => g.grupo))];
+  const filteredGames = games.filter(g => {
+    const mG = groupFilter==='Todos' || g.grupo===groupFilter;
+    const mS = !searchQuery || g.timeA.toLowerCase().includes(searchQuery.toLowerCase()) || g.timeB.toLowerCase().includes(searchQuery.toLowerCase());
+    return mG && mS;
+  });
+
+  const jogosComResultado = games.filter(g => g.placarRealA!==null && g.placarRealB!==null);
+
+  // ── LOADING ───────────────────────────────────────────────────────────────
+  if (!fbReady || loading) return (
+    <div className="min-h-screen bg-slate-900 flex items-center justify-center flex-col gap-5">
+      <div className="relative">
+        <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+          <Trophy cls="w-8 h-8 text-emerald-400"/>
+        </div>
+        <div className="absolute -inset-1 rounded-2xl border border-emerald-500/30 animate-ping opacity-40"/>
+      </div>
+      <div className="text-center">
+        <p className="text-white font-bold text-base">Bolão Copa 2026</p>
+        <p className="text-slate-500 text-xs mt-1">Conectando ao servidor...</p>
+      </div>
+      <div className="flex gap-1.5">
+        {[0,1,2].map(i=><div key={i} className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-bounce" style={{animationDelay:`${i*0.15}s`}}/>)}
+      </div>
+    </div>
+  );
+
+  // ── LOGIN ─────────────────────────────────────────────────────────────────
+  if (!currentUser) return (
+    <div className="min-h-screen flex items-center justify-center p-4" style={{background:'linear-gradient(135deg,#0a0f1e 0%,#0f1629 50%,#0a1a12 100%)'}}>
+      <div className="w-full max-w-sm fade-in">
+        {/* Banner instalar PWA na tela de login */}
+        {(pwa.canInstall || pwa.isIOS) && !pwa.isInstalled && (
+          <button onClick={pwa.isIOS ? ()=>setShowIOSGuide(true) : async()=>{ await pwa.install(); }} className="w-full mb-5 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-3.5 flex items-center gap-3 text-left hover:bg-emerald-500/15 active:scale-98 transition-all">
+            <div className="w-9 h-9 bg-emerald-500/20 rounded-xl flex items-center justify-center shrink-0">
+              <PhoneIc cls="w-5 h-5 text-emerald-400"/>
+            </div>
+            <div className="flex-1">
+              <p className="text-xs font-black text-emerald-300">📲 Instalar como App</p>
+              <p className="text-xs text-emerald-400/70 mt-0.5">Adicione à tela inicial do celular</p>
+            </div>
+            <span className="text-emerald-400 text-lg">›</span>
+          </button>
+        )}
+        <div className="text-center mb-8">
+          <div className="inline-flex p-5 bg-emerald-500/10 border border-emerald-500/20 rounded-3xl mb-4 relative">
+            <Trophy cls="w-12 h-12 text-emerald-400"/>
+            <div className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center">
+              <span className="text-[8px] font-black text-slate-950">26</span>
+            </div>
+          </div>
+          <h1 className="text-3xl font-black text-white tracking-tight">Bolão Copa</h1>
+          <p className="text-emerald-400 font-black text-lg leading-none">2026</p>
+          <p className="text-slate-500 text-xs mt-2 font-medium">{ORG_NAME}</p>
+        </div>
+
+        <div className="flex bg-slate-800/80 backdrop-blur rounded-xl p-1 mb-5 border border-slate-700/50">
+          <button onClick={()=>setAuthMode('login')} className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition-all ${authMode==='login'?'bg-emerald-500 text-slate-950 shadow-lg':'text-slate-400 hover:text-slate-200'}`}>Entrar</button>
+          <button onClick={()=>setAuthMode('register')} className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition-all ${authMode==='register'?'bg-emerald-500 text-slate-950 shadow-lg':'text-slate-400 hover:text-slate-200'}`}>Cadastrar</button>
+        </div>
+
+        <form onSubmit={handleAuth} className="space-y-3">
+          {authMode==='register' && <>
+            <input value={authForm.name} onChange={e=>setAuthForm({...authForm,name:e.target.value})} placeholder="Seu nome completo" className="w-full bg-slate-800/80 border border-slate-700/80 rounded-2xl px-4 py-3.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:bg-slate-800 transition-all"/>
+            <input value={authForm.phone} onChange={e=>setAuthForm({...authForm,phone:formatPhone(e.target.value)})} placeholder="Telefone (WhatsApp)" className="w-full bg-slate-800/80 border border-slate-700/80 rounded-2xl px-4 py-3.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:bg-slate-800 transition-all"/>
+          </>}
+          <input value={authForm.email} onChange={e=>setAuthForm({...authForm,email:e.target.value})} type="email" placeholder="E-mail" className="w-full bg-slate-800/80 border border-slate-700/80 rounded-2xl px-4 py-3.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:bg-slate-800 transition-all"/>
+          <input value={authForm.password} onChange={e=>setAuthForm({...authForm,password:e.target.value})} type="password" placeholder="Senha" className="w-full bg-slate-800/80 border border-slate-700/80 rounded-2xl px-4 py-3.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:bg-slate-800 transition-all"/>
+          {authError && <p className="text-red-400 text-xs flex items-center gap-1.5 bg-red-500/10 border border-red-500/20 p-3 rounded-xl"><AlertIc cls="w-4 h-4 shrink-0"/>{authError}</p>}
+          <button type="submit" className="w-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 font-black py-4 rounded-2xl text-sm transition-all flex items-center justify-center gap-2 mt-1 btn-primary">
+            {authMode==='login' ? <><LogInIc cls="w-4 h-4"/>Entrar no Bolão</> : <><UserPlusIc cls="w-4 h-4"/>Criar minha conta</>}
+          </button>
+        </form>
+
+        {/* Guia iOS */}
+        {showIOSGuide && (
+          <div className="fixed inset-0 bg-black/80 z-50 flex items-end justify-center" onClick={()=>setShowIOSGuide(false)}>
+            <div className="bg-slate-800 rounded-t-2xl p-6 w-full max-w-sm slide-up border-t border-slate-700" onClick={e=>e.stopPropagation()}>
+              <h3 className="font-black text-white text-center mb-4">Instalar no iPhone/iPad</h3>
+              <div className="space-y-3 text-sm text-slate-300">
+                <div className="flex items-start gap-3"><span className="bg-emerald-500 text-slate-950 font-black w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs">1</span><p>Toque no ícone de <strong>compartilhar</strong> (quadrado com seta) na barra inferior do Safari</p></div>
+                <div className="flex items-start gap-3"><span className="bg-emerald-500 text-slate-950 font-black w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs">2</span><p>Role para baixo e toque em <strong>"Adicionar à Tela de Início"</strong></p></div>
+                <div className="flex items-start gap-3"><span className="bg-emerald-500 text-slate-950 font-black w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs">3</span><p>Confirme tocando em <strong>"Adicionar"</strong></p></div>
+              </div>
+              <button onClick={()=>setShowIOSGuide(false)} className="w-full mt-5 bg-slate-700 text-white font-bold py-3 rounded-xl text-sm">Entendi</button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  // ── APP PRINCIPAL ─────────────────────────────────────────────────────────
+  return (
+    <div className="max-w-md mx-auto min-h-screen flex flex-col pb-20">
+
+      {/* HEADER */}
+      <header className="sticky top-0 bg-slate-900/95 backdrop-blur border-b border-slate-800/80 z-30">
+        <div className="px-4 py-3 flex justify-between items-center">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 bg-emerald-500/15 border border-emerald-500/25 rounded-xl flex items-center justify-center">
+              <Trophy cls="w-4 h-4 text-emerald-400"/>
+            </div>
+            <div>
+              <span className="font-black text-sm text-white leading-none block">Bolão Copa 2026</span>
+              <span className="text-[10px] text-slate-500 font-medium">{ORG_NAME}</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="text-right">
+              <p className="text-xs font-bold text-slate-200 leading-tight">{currentUser.name.split(' ')[0]}</p>
+              <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${currentUser.isAdmin?'bg-purple-500/20 text-purple-400':currentUser.active?'bg-emerald-500/20 text-emerald-400':'bg-amber-500/20 text-amber-400'}`}>
+                {currentUser.isAdmin?'Admin':currentUser.active?'Ativo':'Pendente'}
+              </span>
+            </div>
+            <button onClick={()=>setCurrentUser(null)} className="p-2 text-slate-500 hover:text-red-400 transition-colors rounded-lg">
+              <LogOutIc cls="w-4 h-4"/>
+            </button>
+          </div>
+        </div>
+
+        {/* Banner PWA dentro do app */}
+        {(pwa.canInstall || pwa.isIOS) && !pwa.isInstalled && (
+          <div className="px-4 pb-2">
+            <button onClick={pwa.isIOS ? ()=>setShowIOSGuide(true) : async()=>{ await pwa.install(); }} className="w-full bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-3 py-2 flex items-center gap-2 hover:bg-emerald-500/15 transition-colors">
+              <PhoneIc cls="w-4 h-4 text-emerald-400 shrink-0"/>
+              <p className="text-xs text-emerald-300 font-semibold flex-1">Instalar app no celular</p>
+              <span className="text-[10px] text-emerald-400 font-black bg-emerald-500/20 px-2 py-0.5 rounded-full">NOVO</span>
+            </button>
+          </div>
+        )}
+      </header>
+
+      {/* TOAST */}
+      {toast && (
+        <div className={`fixed top-5 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl text-sm font-bold shadow-2xl fade-in max-w-xs text-center border ${toast.type==='error'?'bg-red-500 text-white border-red-400/30':'bg-emerald-500 text-slate-950 border-emerald-400/30'}`} style={{backdropFilter:'blur(8px)'}}>
+          {toast.msg}
+        </div>
+      )}
+
+      {/* MODAL CONFIRMAÇÃO PALPITE */}
+      {confirmModal && (
+        <div className="fixed inset-0 bg-black/75 z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-800 rounded-2xl p-6 w-full max-w-xs fade-in border border-slate-700 shadow-2xl">
+            <div className="text-center mb-4">
+              <div className="inline-flex p-3 bg-emerald-500/10 rounded-full mb-2"><SaveIc cls="w-6 h-6 text-emerald-400"/></div>
+              <h3 className="text-lg font-black text-white">Confirmar Palpite</h3>
+              <p className="text-slate-400 text-xs mt-1">Após salvar não será possível alterar!</p>
+            </div>
+            <div className="bg-slate-900 rounded-xl p-4 mb-5 text-center border border-slate-700">
+              <p className="text-xs text-slate-400 mb-2 font-medium">{confirmModal.timeA} × {confirmModal.timeB}</p>
+              <p className="text-4xl font-black text-white tracking-wide">{confirmModal.sA} — {confirmModal.sB}</p>
+            </div>
+            <div className="flex gap-3">
+              <button onClick={()=>setConfirmModal(null)} className="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-200 py-3 rounded-xl font-bold text-sm transition-colors">Cancelar</button>
+              <button onClick={confirmGuess} className="flex-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 py-3 rounded-xl font-bold text-sm transition-colors">Confirmar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL EXCLUIR USUÁRIO */}
+      {deleteModal && (
+        <div className="fixed inset-0 bg-black/75 z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-800 rounded-2xl p-6 w-full max-w-xs fade-in border border-slate-700">
+            <div className="text-center mb-4">
+              <div className="inline-flex p-3 bg-red-500/10 rounded-full mb-2"><TrashIc cls="w-6 h-6 text-red-400"/></div>
+              <h3 className="text-lg font-black text-white">Excluir Usuário</h3>
+              <p className="text-slate-400 text-xs mt-1">Esta ação não pode ser desfeita.</p>
+              <p className="text-white font-bold text-sm mt-2">{deleteModal.name}</p>
+              <p className="text-slate-500 text-xs">{deleteModal.email}</p>
+            </div>
+            <div className="flex gap-3">
+              <button onClick={()=>setDeleteModal(null)} className="flex-1 bg-slate-700 text-slate-200 py-3 rounded-xl font-bold text-sm">Cancelar</button>
+              <button onClick={()=>deleteUser(deleteModal.email)} className="flex-1 bg-red-500 hover:bg-red-400 text-white py-3 rounded-xl font-bold text-sm transition-colors">Excluir</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* GUIA iOS dentro do app */}
+      {showIOSGuide && (
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-end justify-center" onClick={()=>setShowIOSGuide(false)}>
+          <div className="bg-slate-800 rounded-t-2xl p-6 w-full max-w-sm slide-up border-t border-slate-700" onClick={e=>e.stopPropagation()}>
+            <h3 className="font-black text-white text-center mb-4">Instalar no iPhone/iPad</h3>
+            <div className="space-y-3 text-sm text-slate-300">
+              <div className="flex items-start gap-3"><span className="bg-emerald-500 text-slate-950 font-black w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs">1</span><p>Toque no ícone de <strong>compartilhar</strong> na barra do Safari</p></div>
+              <div className="flex items-start gap-3"><span className="bg-emerald-500 text-slate-950 font-black w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs">2</span><p>Toque em <strong>"Adicionar à Tela de Início"</strong></p></div>
+              <div className="flex items-start gap-3"><span className="bg-emerald-500 text-slate-950 font-black w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs">3</span><p>Confirme tocando em <strong>"Adicionar"</strong></p></div>
+            </div>
+            <button onClick={()=>setShowIOSGuide(false)} className="w-full mt-5 bg-slate-700 text-white font-bold py-3 rounded-xl text-sm">Entendi</button>
+          </div>
+        </div>
+      )}
+
+      {/* ── CONTEÚDO ── */}
+      <main className="flex-1 px-4 py-4 space-y-4">
+
+        {/* ABA JOGOS */}
+        {activeTab==='jogos' && (
+          <div className="space-y-3 fade-in">
+            {!currentUser.active && (
+              <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 flex gap-3">
+                <div className="w-8 h-8 bg-amber-500/20 rounded-xl flex items-center justify-center shrink-0">
+                  <AlertIc cls="w-4 h-4 text-amber-400"/>
+                </div>
+                <div>
+                  <p className="text-xs font-black text-amber-300">Pagamento pendente</p>
+                  <p className="text-xs text-amber-400/80 mt-0.5">Realize o pagamento e aguarde liberação para dar palpites.</p>
+                </div>
+              </div>
+            )}
+            <div className="relative">
+              <SearchIc cls="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"/>
+              <input value={searchQuery} onChange={e=>setSearchQuery(e.target.value)} placeholder="Buscar time..." className="w-full bg-slate-800 border border-slate-700 rounded-xl pl-9 pr-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"/>
+            </div>
+            <div className="flex gap-2 overflow-x-auto scrollbar-none pb-1">
+              {grupos.map(g => (
+                <button key={g} onClick={()=>setGroupFilter(g)} className={`whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-bold transition-all active:scale-95 ${groupFilter===g?'bg-emerald-500 text-slate-950':'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}>{g}</button>
+              ))}
+            </div>
+            {filteredGames.map(game => {
+              const past = isGamePast(game.data, game.horario);
+              const myGuess = guesses.find(g => g.email===currentUser.email && g.gameId===game.id);
+              const hasReal = game.placarRealA!==null && game.placarRealB!==null;
+              const pts = myGuess && hasReal ? getPoints(myGuess, game) : null;
+              return (
+                <div key={game.id} className={`bg-slate-800 rounded-2xl p-4 border transition-all card-hover ${past?'border-slate-700/40 opacity-85':'border-slate-700/80 hover:border-slate-600'}`}>
+                  <div className="flex justify-between items-center mb-3">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">{game.grupo}</span>
+                    <span className="text-[10px] text-slate-500">{game.data} · {game.horario}</span>
+                  </div>
+                  {hasReal && (
+                    <div className="text-center mb-3">
+                      <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full">⚽ Resultado: {game.placarRealA} × {game.placarRealB}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="flex-1 text-right text-sm font-bold text-white truncate">{game.timeA}</span>
+                    {myGuess ? (
+                      <div className="flex items-center gap-1 shrink-0">
+                        <span className="bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-1.5 rounded-lg text-sm font-black text-emerald-400 min-w-[36px] text-center">{myGuess.scoreA}</span>
+                        <span className="text-slate-500 text-xs font-bold">×</span>
+                        <span className="bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-1.5 rounded-lg text-sm font-black text-emerald-400 min-w-[36px] text-center">{myGuess.scoreB}</span>
+                        <LockIc cls="w-3.5 h-3.5 text-slate-600 ml-1"/>
+                      </div>
+                    ) : past ? (
+                      <div className="flex items-center gap-1 shrink-0">
+                        <span className="bg-slate-700/50 px-2.5 py-1.5 rounded-lg text-sm text-slate-600 min-w-[36px] text-center">—</span>
+                        <span className="text-slate-600 text-xs">×</span>
+                        <span className="bg-slate-700/50 px-2.5 py-1.5 rounded-lg text-sm text-slate-600 min-w-[36px] text-center">—</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1 shrink-0">
+                        <input type="number" min="0" max="20" value={tempScores[`${game.id}_A`]||''} onChange={e=>setTempScores({...tempScores,[`${game.id}_A`]:e.target.value})} className="w-11 h-10 text-center bg-slate-700 border border-slate-600 rounded-lg text-white text-sm font-bold focus:outline-none focus:border-emerald-500 transition-colors" placeholder="0"/>
+                        <span className="text-slate-500 text-xs font-bold">×</span>
+                        <input type="number" min="0" max="20" value={tempScores[`${game.id}_B`]||''} onChange={e=>setTempScores({...tempScores,[`${game.id}_B`]:e.target.value})} className="w-11 h-10 text-center bg-slate-700 border border-slate-600 rounded-lg text-white text-sm font-bold focus:outline-none focus:border-emerald-500 transition-colors" placeholder="0"/>
+                      </div>
+                    )}
+                    <span className="flex-1 text-sm font-bold text-white truncate">{game.timeB}</span>
+                  </div>
+                  {pts!==null && (
+                    <div className={`text-center text-xs font-black py-1.5 rounded-lg ${pts===5?'bg-yellow-500/20 text-yellow-400':pts===3?'bg-emerald-500/20 text-emerald-400':'bg-slate-700/50 text-slate-500'}`}>
+                      {pts===5?'🎯 Placar exato! +5 pts':pts===3?'✅ Vencedor certo +3 pts':'❌ Sem pontos desta vez'}
+                    </div>
+                  )}
+                  {!myGuess && !past && currentUser.active && (
+                    <button onClick={()=>handleSaveGuess(game.id)} className="w-full mt-2 bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 font-bold py-2.5 rounded-xl text-xs transition-all flex items-center justify-center gap-1.5">
+                      <SaveIc cls="w-3.5 h-3.5"/> Salvar Palpite
+                    </button>
+                  )}
+                  {past && !myGuess && <p className="text-center text-[10px] text-slate-600 mt-1">Sem palpite registrado</p>}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* ABA RANKING */}
+        {activeTab==='ranking' && (
+          <div className="space-y-3 fade-in">
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-black text-white">🏆 Ranking Geral</h2>
+              <span className="text-xs text-slate-500">{ranking.length} participantes</span>
+            </div>
+            {ranking.length === 0 && (
+              <div className="text-center py-12">
+                <Trophy cls="w-10 h-10 text-slate-700 mx-auto mb-2"/>
+                <p className="text-slate-500 text-sm">Nenhum resultado ainda.</p>
+              </div>
+            )}
+            {ranking.map((u, i) => (
+              <div key={u.email} className={`bg-slate-800 rounded-2xl p-4 border flex items-center gap-3 card-hover transition-all ${i===0?'border-yellow-500/40 bg-gradient-to-r from-yellow-500/5 to-slate-800 rank-first':i===1?'border-slate-400/25 bg-gradient-to-r from-slate-400/5 to-slate-800':i===2?'border-amber-700/30 bg-gradient-to-r from-amber-700/5 to-slate-800':'border-slate-700/70'}`}>
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black shrink-0 text-base ${i===0?'bg-yellow-500/20 text-yellow-400':i===1?'bg-slate-400/20 text-slate-300':i===2?'bg-amber-700/20 text-amber-600':'bg-slate-700 text-slate-400 text-sm'}`}>
+                  {i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-white text-sm truncate">{u.name}</p>
+                  <p className="text-xs text-slate-500">🎯 {u.exact} exatos · ✅ {u.winner} vencedores · {u.total} avaliados</p>
+                </div>
+                <div className="text-right shrink-0">
+                  <p className="text-2xl font-black text-emerald-400 leading-none">{u.points}</p>
+                  <p className="text-[10px] text-slate-500 mt-0.5">pts</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ABA RESULTADOS */}
+        {activeTab==='resultados' && (
+          <div className="space-y-3 fade-in">
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-black text-white">⚽ Resultados</h2>
+              <span className="text-xs text-slate-500">{jogosComResultado.length} de 72 jogos</span>
+            </div>
+            {jogosComResultado.length === 0 && (
+              <div className="text-center py-12">
+                <ResultIc cls="w-10 h-10 text-slate-700 mx-auto mb-2"/>
+                <p className="text-slate-500 text-sm">Nenhum resultado lançado ainda.</p>
+              </div>
+            )}
+            {jogosComResultado.map(game => {
+              const rA = parseInt(game.placarRealA), rB = parseInt(game.placarRealB);
+              const winner = rA > rB ? game.timeA : rA < rB ? game.timeB : null;
+              return (
+                <div key={game.id} className="bg-slate-800 rounded-2xl p-4 border border-slate-700">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">{game.grupo}</span>
+                    <span className="text-[10px] text-slate-500">{game.data}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`flex-1 text-right text-sm font-bold truncate ${winner===game.timeA?'text-emerald-400':winner===null?'text-yellow-400':'text-slate-400'}`}>{game.timeA}</span>
+                    <div className="shrink-0 flex items-center gap-1.5">
+                      <span className="bg-slate-900 border border-slate-700 px-3 py-1.5 rounded-lg text-lg font-black text-white min-w-[40px] text-center">{game.placarRealA}</span>
+                      <span className="text-slate-500 font-bold text-sm">×</span>
+                      <span className="bg-slate-900 border border-slate-700 px-3 py-1.5 rounded-lg text-lg font-black text-white min-w-[40px] text-center">{game.placarRealB}</span>
+                    </div>
+                    <span className={`flex-1 text-sm font-bold truncate ${winner===game.timeB?'text-emerald-400':winner===null?'text-yellow-400':'text-slate-400'}`}>{game.timeB}</span>
+                  </div>
+                  {winner===null && <p className="text-center text-[10px] text-yellow-400 mt-1 font-bold">Empate</p>}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* ABA PAGAMENTO */}
+        {activeTab==='pagamento' && (
+          <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700 fade-in">
+            <div className="text-center space-y-2 mb-6">
+              <div className="inline-flex p-3.5 bg-emerald-500/10 text-emerald-400 rounded-full"><CoinsIc cls="w-8 h-8"/></div>
+              <h3 className="text-xl font-extrabold text-slate-100">Taxa de Entrada</h3>
+              <p className="text-xs text-slate-500 font-medium">{ORG_NAME}</p>
+              {currentUser.active && <span className="inline-block bg-emerald-500/20 text-emerald-400 text-xs font-black px-3 py-1 rounded-full">✅ Pagamento confirmado</span>}
+            </div>
+            <div className="bg-slate-900 border border-slate-700/50 rounded-xl p-4 flex justify-between items-center mb-6">
+              <div><span className="text-xs text-slate-400 font-semibold block">Valor</span><span className="text-2xl font-black text-yellow-400">R$ {pixConfig.value||'--'}</span></div>
+              <div className="text-right"><span className="text-xs text-slate-400 font-semibold block">Organizador</span><span className="text-sm font-bold text-slate-200">{ORG_NAME}</span></div>
+            </div>
+            {pixConfig.qrImageUrl ? (
+              <div className="bg-white p-3 rounded-xl max-w-[220px] mx-auto shadow-lg border-2 border-slate-600">
+                <img src={pixConfig.qrImageUrl} alt="QR Code Pix" className="w-full rounded"/>
+              </div>
+            ) : (
+              <div className="bg-slate-900 border border-dashed border-slate-600 rounded-xl max-w-[220px] mx-auto p-8 text-center">
+                <QrCode cls="w-12 h-12 text-slate-600 mx-auto mb-2"/>
+                <p className="text-xs text-slate-500">QR Code será exibido aqui</p>
+              </div>
+            )}
+            {pixConfig.chave && (
+              <div className="mt-5 space-y-2">
+                <label className="text-xs font-bold uppercase text-slate-400 block">Chave Pix</label>
+                <div className="flex gap-2">
+                  <input type="text" readOnly value={pixConfig.chave} className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono text-emerald-400"/>
+                  <button onClick={()=>{navigator.clipboard.writeText(pixConfig.chave);showToast('Chave copiada!');}} className="bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-slate-900 font-bold px-4 py-2 rounded-xl text-xs transition-all">Copiar</button>
+                </div>
+              </div>
+            )}
+            {!currentUser.active && <p className="text-center text-xs text-amber-400 mt-4 bg-amber-500/10 p-3 rounded-xl">Após o pagamento, aguarde o admin liberar seu acesso.</p>}
+          </div>
+        )}
+
+        {/* ABA ADMIN */}
+        {activeTab==='admin' && currentUser.isAdmin && (
+          <div className="space-y-5 fade-in">
+            <PixAdminPanel pixConfig={pixConfig} onSave={savePixConfig} showToast={showToast}/>
+
+            {/* Liberar / gerenciar usuários */}
+            <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700">
+              <h3 className="text-base font-bold text-emerald-400 flex items-center gap-2 mb-4"><UserCheckIc cls="w-5 h-5"/> Participantes</h3>
+              <div className="space-y-3">
+                {users.filter(u => !u.isAdmin || u.email!==ADMIN_EMAIL).length===0 && <p className="text-slate-500 text-sm text-center py-4">Nenhum participante ainda.</p>}
+                {users.filter(u => u.email!==ADMIN_EMAIL).map(user => (
+                  <div key={user.email} className="bg-slate-900 border border-slate-800 rounded-xl p-3">
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="min-w-0 flex-1 pr-2">
+                        <p className="font-bold text-slate-200 text-sm truncate">{user.name}</p>
+                        <p className="text-slate-500 text-xs truncate">{user.email}</p>
+                        <p className="text-emerald-400 text-xs font-semibold">{user.phone}</p>
+                      </div>
+                      <div className="flex flex-col items-end gap-1 shrink-0">
+                        <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase ${user.active?'bg-emerald-500/10 text-emerald-400':'bg-amber-500/10 text-amber-400'}`}>{user.active?'Ativo':'Pendente'}</span>
+                        {user.isAdmin && <span className="px-2 py-0.5 rounded text-[9px] font-black uppercase bg-purple-500/10 text-purple-400">Admin</span>}
+                      </div>
+                    </div>
+                    <div className="flex gap-1.5 flex-wrap">
+                      {user.phone && (
+                        <a href={`https://wa.me/55${user.phone.replace(/\D/g,'')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 bg-emerald-600/15 text-emerald-400 font-bold py-1.5 px-2.5 rounded-lg text-[11px] border border-emerald-500/10 hover:bg-emerald-600/25 transition-colors">
+                          <MsgIc cls="w-3.5 h-3.5"/> WhatsApp
+                        </a>
+                      )}
+                      <button onClick={()=>toggleUserActivation(user.email, user.active)} className={`flex items-center gap-1 py-1.5 px-2.5 rounded-lg font-bold text-[11px] transition-colors ${user.active?'bg-amber-500/10 text-amber-400 hover:bg-amber-500/20':'bg-emerald-500 text-slate-950 hover:bg-emerald-400'}`}>
+                        {user.active?'Bloquear':'Ativar'}
+                      </button>
+                      <button onClick={()=>toggleAdmin(user.email, user.isAdmin)} className={`flex items-center gap-1 py-1.5 px-2.5 rounded-lg font-bold text-[11px] transition-colors ${user.isAdmin?'bg-purple-500/20 text-purple-400 hover:bg-purple-500/30':'bg-slate-700 text-slate-300 hover:bg-slate-600'}`}>
+                        <ShieldIc cls="w-3.5 h-3.5"/> {user.isAdmin?'Remover admin':'Tornar admin'}
+                      </button>
+                      <button onClick={()=>setDeleteModal(user)} className="flex items-center gap-1 bg-red-500/10 text-red-400 hover:bg-red-500/20 py-1.5 px-2.5 rounded-lg font-bold text-[11px] transition-colors">
+                        <TrashIc cls="w-3.5 h-3.5"/> Excluir
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Lançar resultados */}
+            <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700">
+              <h3 className="text-base font-bold text-red-400 mb-3 flex items-center gap-2"><ResultIc cls="w-5 h-5"/> Lançar Resultados</h3>
+              <div className="space-y-2 max-h-[380px] overflow-y-auto pr-1 scrollbar-none">
+                {INITIAL_GAMES.map(baseGame => {
+                  const game = games.find(g => g.id===baseGame.id) || baseGame;
+                  return (
+                    <div key={game.id} className="bg-slate-900 p-3 rounded-xl flex items-center gap-2">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-slate-200 text-xs truncate">{game.timeA} × {game.timeB}</p>
+                        <p className="text-[10px] text-slate-600">{game.data}</p>
+                      </div>
+                      <div className="flex gap-1 shrink-0">
+                        <input type="number" min="0" placeholder="-" value={game.placarRealA!==null?game.placarRealA:''} onChange={e=>handleUpdateRealScore(game.id, e.target.value, game.placarRealB!==null?String(game.placarRealB):'')} className="w-10 h-9 text-center bg-slate-800 border border-slate-700 rounded-lg text-white text-sm font-bold focus:outline-none focus:border-emerald-500 transition-colors"/>
+                        <span className="self-center text-slate-600 text-xs">×</span>
+                        <input type="number" min="0" placeholder="-" value={game.placarRealB!==null?game.placarRealB:''} onChange={e=>handleUpdateRealScore(game.id, game.placarRealA!==null?String(game.placarRealA):'', e.target.value)} className="w-10 h-9 text-center bg-slate-800 border border-slate-700 rounded-lg text-white text-sm font-bold focus:outline-none focus:border-emerald-500 transition-colors"/>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+      </main>
+
+      {/* NAVBAR */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur border-t border-slate-800/80 z-40 safe-area-pb">
+        <div className="max-w-md mx-auto flex justify-around items-center py-2 px-2">
+          {[
+            { id:'jogos',    label:'Jogos',      icon:<Calendar cls="w-5 h-5"/> },
+            { id:'ranking',  label:'Ranking',    icon:<Trophy cls="w-5 h-5"/> },
+            { id:'resultados',label:'Resultados',icon:<ResultIc cls="w-5 h-5"/> },
+            { id:'pagamento',label:'Pagamento',  icon:<QrCode cls="w-5 h-5"/> },
+            ...(currentUser.isAdmin ? [{ id:'admin', label:'Admin', icon:<SettingsIc cls="w-5 h-5"/> }] : [])
+          ].map(tab => (
+            <button key={tab.id} onClick={()=>setActiveTab(tab.id)} className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-2xl transition-all active:scale-90 ${activeTab===tab.id?'text-emerald-400 bg-emerald-500/10':'text-slate-500 hover:text-slate-300'}`}>
+              {tab.icon}
+              <span className="text-[10px] font-bold">{tab.label}</span>
+              {activeTab===tab.id && <span className="w-4 h-0.5 bg-emerald-400 rounded-full mt-0.5"/>}
+            </button>
+          ))}
+        </div>
+      </nav>
+    </div>
+  );
+}
+
+// ── PAINEL PIX ADMIN ──────────────────────────────────────────────────────────
+function PixAdminPanel({ pixConfig, onSave, showToast }) {
+  const [form, setForm] = React.useState({ value:'', chave:'', qrImageUrl:'' });
+  const [preview, setPreview] = React.useState('');
+  const fileRef = React.useRef();
+
+  React.useEffect(() => {
+    setForm({ value: pixConfig.value||'', chave: pixConfig.chave||'', qrImageUrl: pixConfig.qrImageUrl||'' });
+    setPreview(pixConfig.qrImageUrl||'');
+  }, [pixConfig]);
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 600*1024) { showToast('Imagem muito grande (máx 600KB).','error'); return; }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setPreview(ev.target.result);
+      setForm(f => ({ ...f, qrImageUrl: ev.target.result }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  return (
+    <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700">
+      <h3 className="text-base font-bold text-yellow-400 flex items-center gap-2 mb-4"><CoinsIc cls="w-5 h-5"/> Configurar Pagamento</h3>
+      <div className="space-y-3">
+        <div>
+          <label className="text-xs font-bold text-slate-400 uppercase block mb-1.5">Valor da Taxa (R$)</label>
+          <input value={form.value} onChange={e=>setForm({...form,value:e.target.value})} placeholder="Ex: 20.00" className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-yellow-500 transition-colors"/>
+        </div>
+        <div>
+          <label className="text-xs font-bold text-slate-400 uppercase block mb-1.5">Chave Pix</label>
+          <input value={form.chave} onChange={e=>setForm({...form,chave:e.target.value})} placeholder="CPF, e-mail, telefone ou chave aleatória" className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-yellow-500 transition-colors"/>
+        </div>
+        <div>
+          <label className="text-xs font-bold text-slate-400 uppercase block mb-2">Imagem do QR Code</label>
+          {preview ? (
+            <div>
+              <div className="bg-white p-3 rounded-xl max-w-[180px]">
+                <img src={preview} alt="QR Code" className="w-full rounded"/>
+              </div>
+              <button onClick={()=>{setPreview('');setForm(f=>({...f,qrImageUrl:''}));}} className="mt-2 text-xs text-red-400 hover:text-red-300 transition-colors">Remover imagem</button>
+            </div>
+          ) : (
+            <button onClick={()=>fileRef.current.click()} className="flex items-center gap-2 bg-slate-900 border border-dashed border-slate-600 hover:border-yellow-500 text-slate-400 hover:text-yellow-400 px-4 py-4 rounded-xl text-sm transition-colors w-full justify-center">
+              <ImageIc cls="w-5 h-5"/> Upload do QR Code
+            </button>
+          )}
+          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload}/>
+          <p className="text-[10px] text-slate-600 mt-1">Gere no seu banco, salve a imagem e envie aqui. Máx 600KB.</p>
+        </div>
+        <button onClick={()=>{ if(!form.value){showToast('Digite o valor.','error');return;} onSave(form); }} className="w-full bg-yellow-500 hover:bg-yellow-400 active:scale-95 text-slate-950 font-black py-3 rounded-xl text-sm transition-all flex items-center justify-center gap-2">
+          <SaveIc cls="w-4 h-4"/> Salvar Configurações
+        </button>
+      </div>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App/>);
+</script>
+</body>
+</html>
